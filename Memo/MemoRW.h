@@ -9,6 +9,8 @@
 
 #include "MemoCom.h"
 
+#include "Tools.h"
+
 class ZipCode
 {
 protected:
@@ -52,33 +54,40 @@ enum Addrss
 class MemoRWClass
 {
 protected:
+	void prepareWords(Addrss toDo, Addrss pageOr);
 
-public:
+	void showWords(Addrss toDo, Addrss pageOr);
 
-	ZipCode z;
-
-	binaryZipCode b;
+	bool conversionBinary(Addrss toWord, Addrss pageOr);
 
 	bool isWrite = false;
 	bool current = false;
 	bool isPage = false;
 
+	binaryZipCode binZipCode;
+
+public:
+
+	ZipCode z;
+
+	MemoComClass MemoCom;
+
+	//Provides cell location
 	void giveZipCode(int ICnumber, unsigned int address);
 
-	bool conversionBinary(Addrss toWord, Addrss pageOr);
-
+	//Reads a word
 	void readWord();
 
+	//Writes a word
 	bool writeWord(Addrss addrs, bool hl);
 
+	//Reads a page
 	void readPage(int nroOfMemCells);
+	//Writes a page
 	void writePage();
 
-	void prepareWords(Addrss toDo, Addrss pageOr);
-	void showWords(Addrss toDo, Addrss pageOr);
-	void readWriteCell(Addrss toDo, Addrss pageOr, int sizePage);
+	//Reads or writes a cell
+	void readWriteCell(Addrss toDo, Addrss pageOr, int sizePage = 0);
 };
-
-extern MemoRWClass MemoRW;
 
 #endif

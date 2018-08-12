@@ -16,7 +16,10 @@
 #define maxBits 8
 #define maxICBits 3
 
-#define tiempo 2
+#define totalMaxBits  (maxBits * 2) // i.e. 16
+#define fixedBias  (maxLenght - totalMaxBits) //i.e. 256-16 = 240
+
+#define tiempo 3
 #define stoptime  3000
 
 enum Chip
@@ -30,30 +33,24 @@ enum Chip
 
 class MemoComClass
 {
-
-
 protected:
+	void scl(bool hl);
+	bool sda(bool hl, bool write);
 
 public:
 
 	int factor;
 
-
 	enum Chip IC;
 
-	void scl(bool hl);
-	bool sda(bool hl, bool write);
+	bool acknowledge(bool output);
 
-	void startStop(bool start);
+	void startStop(bool started);
 
-	void setupMemo(Chip ic);
+	void setup(Chip ic);
 
 	bool WBit(bool bitToWrite);
 	bool RBit();
-
-	bool acknowledge(bool output);
 };
-
-extern MemoComClass MemoCom;
 
 #endif

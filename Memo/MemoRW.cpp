@@ -1,24 +1,9 @@
-
-#include "Tools.h"
 #include "MemoRW.h"
 
 void MemoRWClass::giveZipCode(int ICnumber, unsigned int address)
 {
-	/*
-	if (IC != Chip::C02 && IC != Chip::C01)
-	{
-	while (address >= maxLenght)
-	{
-	address -= maxLenght;
-	if (IC == Chip::C04)	ICnumber += 4;
-	else ICnumber += 2;
-	}
-	//z.factor = 2 * maxBits;
-	}
-	*/
 	z.Device = ICnumber;
 	z.Memory = address;
-	//else  z.factor = maxBits;
 }
 
 bool MemoRWClass::conversionBinary(Addrss toWord, Addrss pageOr) //ADDRESSING LOOP
@@ -27,39 +12,34 @@ bool MemoRWClass::conversionBinary(Addrss toWord, Addrss pageOr) //ADDRESSING LO
 	{
 		for (int i = 0; i < maxBits + C16; i++)
 		{
-			b.Memory[i] = false;
-			b.Memory[i] = ToolsClass::doBinary(z.Memory, i);
+			binZipCode.Memory[i] = false;
+			binZipCode.Memory[i] = ToolsClass::doBinary(z.Memory, i);
 		}
 	}
 	else if (toWord == Dev)
 	{
 		for (int i = 0; i < maxICBits; i++)
 		{
-			b.Device[i] = false;
-			b.Device[i] = ToolsClass::doBinary(z.Device, i);
+			binZipCode.Device[i] = false;
+			binZipCode.Device[i] = ToolsClass::doBinary(z.Device, i);
 		}
 
-		b.DeviceAux[4] = b.Device[0];
-		b.DeviceAux[5] = b.Device[1];
-		b.DeviceAux[6] = b.Device[2];
+		binZipCode.DeviceAux[4] = binZipCode.Device[0];
+		binZipCode.DeviceAux[5] = binZipCode.Device[1];
+		binZipCode.DeviceAux[6] = binZipCode.Device[2];
 
 		if (MemoCom.IC != C02 && MemoCom.IC != C01)
 		{
-			b.DeviceAux[6] = b.Memory[8];
+			binZipCode.DeviceAux[6] = binZipCode.Memory[8];
 			if (MemoCom.IC == C08 || MemoCom.IC == C16)
 			{
-				b.DeviceAux[5] = b.Memory[9];
+				binZipCode.DeviceAux[5] = binZipCode.Memory[9];
 			}
 			if (MemoCom.IC == C16)
 			{
-				b.DeviceAux[4] = b.Memory[10];
+				binZipCode.DeviceAux[4] = binZipCode.Memory[10];
 			}
-			//z.factor = 2 * maxBits;
 		}
-
-		//5  //A2 is the first binary digit
-		//	WBit(b.Device[1]);  //6 // A1
-		//WBit(b.Device[2]);  //7 //A0
 	}
 
 	else if (toWord == Info)
@@ -70,27 +50,26 @@ bool MemoRWClass::conversionBinary(Addrss toWord, Addrss pageOr) //ADDRESSING LO
 			{
 				for (int i = 0; i < maxBits; i++) //INITIALIZES THE PAGE ARRAY
 				{
-					b.Page[j][i] = false;
-					//	//notok = writeWord(Info, LOW);
+					binZipCode.Page[j][i] = false;
 				}
 			}
-			b.pageIter = 0; //memmory cell index in the array
+			binZipCode.pageIter = 0; //memmory cell index in the array
 			int max = z.Page.length(); //take a lenght up to maxOfBits
 			for (int u = 0; u < max; u++)
 			{
 				int aux = z.Page.charAt(u);
 				for (int j = 0; j < maxBits; j++)
 				{
-					b.Page[b.pageIter][j] = ToolsClass::doBinary(aux, j);
+					binZipCode.Page[binZipCode.pageIter][j] = ToolsClass::doBinary(aux, j);
 				}
-				b.pageIter++;
+				binZipCode.pageIter++;
 			}
 		}
 		else {
 			for (int i = 0; i < maxBits; i++)
 			{
-				b.Data[i] = false;
-				b.Data[i] = ToolsClass::doBinary(z.Data, i);
+				binZipCode.Data[i] = false;
+				binZipCode.Data[i] = ToolsClass::doBinary(z.Data, i);
 			}
 		}
 	}
@@ -103,27 +82,26 @@ void MemoRWClass::readWord()
 	z.Data = 0;
 	for (uint8_t j = 0; j < maxBits; j++)
 	{
-		b.Data[j] = MemoCom.RBit();
+		binZipCode.Data[j] = MemoCom.RBit();
 	}
-	z.Data = ToolsClass::conversionInt(b.Data, maxBits);
+	z.Data = ToolsClass::conversionInt(binZipCode.Data, maxBits);
 }
 
 bool MemoRWClass::writeWord(Addrss addrs, bool hl) //this is always the same except the 8th bit
 {
-	//writeWordToAddress(addrs, hl);
 	switch (addrs)
 	{
 	case Dev:
 	{
 		Serial.print('D');
-		b.DeviceAux[7] = hl;
+		binZipCode.DeviceAux[7] = hl;
 		//therefore for instance, if I send to device 1, it will be hardwired A2=HIGH
 		// but I dont have to invert the array for other icNumbers
 		//on th eother hand IF I USE IC NUMBERS I CAN GIVE PAGE NUMBERS DIRECTLY!
 		//LEAVE THEREFORE IN THIS ORDER
 		for (int i = 0; i < maxBits; i++)
 		{
-			MemoCom.WBit(b.DeviceAux[i]);
+			MemoCom.WBit(binZipCode.DeviceAux[i]);
 		}
 		//8
 
@@ -135,7 +113,7 @@ bool MemoRWClass::writeWord(Addrss addrs, bool hl) //this is always the same exc
 		for (int i = 0; i < maxBits; i++)
 		{
 			//int pos = (maxBits - 1 ) - i;
-			MemoCom.WBit(b.Memory[i]);
+			MemoCom.WBit(binZipCode.Memory[i]);
 		}
 		break;
 	}
@@ -144,7 +122,7 @@ bool MemoRWClass::writeWord(Addrss addrs, bool hl) //this is always the same exc
 		Serial.print('I');
 		for (int i = 0; i < maxBits; i++)
 		{
-			MemoCom.WBit(b.Data[i]);
+			MemoCom.WBit(binZipCode.Data[i]);
 		}
 		break;
 	}
@@ -187,13 +165,13 @@ void MemoRWClass::writePage()
 	//int cK = 0;
 	z.cE = 0;
 	z.trials = MemoCom.factor;
-	//b.pageIter CHANGE THIS BACK
-	for (j = 0; j < b.pageIter; j++) //page iter keeps last memmory cell index within page
+	//binZipCode.pageIter CHANGE THIS BACK
+	for (j = 0; j < binZipCode.pageIter; j++) //page iter keeps last memmory cell index within page
 	{
 		//send a data memmory (cell data; memmory data)
 		for (int i = 0; i < maxBits; i++)
 		{
-			MemoCom.WBit(b.Page[j][i]);
+			MemoCom.WBit(binZipCode.Page[j][i]);
 		}
 
 		bool notok = MemoCom.acknowledge(false);
@@ -235,7 +213,7 @@ void MemoRWClass::showWords(Addrss toDo, Addrss pageOr)
 {
 	int dH = DEC; //decimal or hex?
 
-	z.Device = ToolsClass::conversionInt(b.Device, maxICBits);
+	z.Device = ToolsClass::conversionInt(binZipCode.Device, maxICBits);
 
 	Serial.print(" @");
 	Serial.print(z.Device, dH);
@@ -250,7 +228,7 @@ void MemoRWClass::showWords(Addrss toDo, Addrss pageOr)
 	}
 
 	Serial.print(" M-");
-	z.Memory = ToolsClass::conversionInt(b.Memory, maxBits + C16);
+	z.Memory = ToolsClass::conversionInt(binZipCode.Memory, maxBits + C16);
 	Serial.print(z.Memory, dH);
 
 	if (!isWrite)
@@ -262,13 +240,9 @@ void MemoRWClass::showWords(Addrss toDo, Addrss pageOr)
 
 	if (!isPage)
 	{
-		z.Data = ToolsClass::conversionInt(b.Data, maxBits);
+		z.Data = ToolsClass::conversionInt(binZipCode.Data, maxBits);
 		Serial.print(z.Data, dH);
 		Serial.print("+");
-		//String c = "";
-		//c+=(char)z.Data;
-		//Serial.print(c);//why does it CRASH with this??
-		//why the hell cannot this work when it encounters a "space"?
 	}
 	else
 	{
@@ -277,7 +251,9 @@ void MemoRWClass::showWords(Addrss toDo, Addrss pageOr)
 	}
 	Serial.println();
 }
-void MemoRWClass::readWriteCell(Addrss toDo, Addrss pageOr, int sizePage)
+
+//Provides read or write access to a cell
+void MemoRWClass::readWriteCell(Addrss toDo, Addrss pageOr, int sizePage = 0)
 {
 	prepareWords(toDo, pageOr);
 

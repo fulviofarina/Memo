@@ -1,8 +1,4 @@
-
 #include "MemoCom.h"
-
-
-
 
 void MemoComClass::scl(bool hl)
 {
@@ -53,7 +49,7 @@ void MemoComClass::startStop(bool start1)
 	}
 }
 
-void MemoComClass::setupMemo(Chip ic)
+void MemoComClass::setup(Chip ic)
 {
 	pinMode(SCLPin, OUTPUT);
 	IC = ic;

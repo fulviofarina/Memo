@@ -7,14 +7,17 @@
 #include "WProgram.h"
 #endif
 
+#include "MemoCom.h"
+#include "MemoRW.h"
+
 class Times
 {
 protected:
 
 public:
-	unsigned long start;
-	unsigned long end;
-	double diff;
+	unsigned long started;
+	unsigned long ended;
+	double elapsedMiliseconds;
 };
 
 class MemoClass
@@ -25,33 +28,30 @@ protected:
 	void readCurrent(int IC);
 
 	void testErase();
-
+	void startt();
+	void endt();
 	//NOT FIXED
 	void readCurrentloop(int IC);
 
-public:
+	MemoRWClass MemoRW;
 
-	Times t;
+	Times timeRegister;
+
+public:
 
 	void writeCell(int icNumber, unsigned int address, int data);
 
 	void readCell(int ICnumber, unsigned int address);
 
-	//IT USES PAGES TO WRITE MESSAGES! NOT CELL BY CELL
-	//if READ then you dont give the Msg obviously but should provide its lenght
-	//if write you dont give the message size, it is taken from the message lenght.
 	void readWriteMsg(int icNumber, int page, bool read, String msg, int msgSize);
 	//per cell erase, starting at startadress and given by lenght...
 
-	void readErase(int icNumber, int startAddrss, int lenght, bool ramDo, bool readMode);
+	void readErase(int icNumber, int startAddrss, int lenght, bool readMode = true, bool ramDo = true);
 
-	String readEraseAPage(int icNumber, int Page, int lenght, bool ramDo, bool readMode);
+	String readEraseAPage(int icNumber, int Page, int lenght, bool readMode = true, bool ramDo = true);
 
-	void startt();
-	void endt();
-	void readEraseAll(int iCNumber, bool ramDo, bool readMode);
+	void readEraseAll(int iCNumber, bool readMode = true, bool ramDo = true);
+	void setup(Chip ic);
 };
-
-extern MemoClass Memo;
 
 #endif
