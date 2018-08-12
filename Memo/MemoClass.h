@@ -1,5 +1,5 @@
-#ifndef _MEMO_h
-#define _MEMO_h
+#ifndef _MEMOCLASS_h
+#define _MEMOCLASS_h
 
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"

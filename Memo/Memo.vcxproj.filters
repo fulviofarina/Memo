@@ -21,16 +21,16 @@
     <ClInclude Include="__vm\.Memo.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Memo.h">
+    <ClInclude Include="MemoCom.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MemoCom.h">
+    <ClInclude Include="Tools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MemoRW.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Tools.h">
+    <ClInclude Include="MemoClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -38,13 +38,13 @@
     <ClCompile Include="MemoCom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Memo.cpp">
+    <ClCompile Include="Tools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MemoRW.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Tools.cpp">
+    <ClCompile Include="MemoClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

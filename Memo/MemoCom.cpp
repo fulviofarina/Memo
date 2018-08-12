@@ -1,35 +1,37 @@
-#include <stdio.h>
-#include <math.h>
+
 #include "MemoCom.h"
+
+
+
 
 void MemoComClass::scl(bool hl)
 {
-	digitalWrite(SCLPin, hl);  //
+	digitalWrite(SCLPin, hl);
 
-	delayMicroseconds(tiempo);//
+	delayMicroseconds(tiempo);
 }
 bool MemoComClass::sda(bool hl, bool write)
 {
-	bool read = false;
+	bool read1 = false;
 	if (write)
 	{
-		pinMode(SDAPin, OUTPUT);     // OUTPUT
+		pinMode(SDAPin, OUTPUT);
 
-		digitalWrite(SDAPin, hl);  //
+		digitalWrite(SDAPin, hl);
 	}
 	else
 	{
-		pinMode(SDAPin, INPUT);     //
+		pinMode(SDAPin, INPUT);
 
-		read = digitalRead(SDAPin);
+		read1 = digitalRead(SDAPin);
 	}
-	delayMicroseconds(tiempo);//
-	return read;
+	delayMicroseconds(tiempo);
+	return read1;
 }
 
-void MemoComClass::startStop(bool start)
+void MemoComClass::startStop(bool start1)
 {
-	if (start)
+	if (start1)
 	{
 		scl(HIGH);
 
@@ -37,7 +39,6 @@ void MemoComClass::startStop(bool start)
 
 		sda(LOW, true);
 
-		//
 		scl(LOW);
 	}
 	else
@@ -45,15 +46,15 @@ void MemoComClass::startStop(bool start)
 		sda(LOW, true);
 
 		scl(HIGH);
-		// STOP
+
 		sda(HIGH, true);
 
-		delayMicroseconds(stoptime); //
+		delayMicroseconds(stoptime);
 	}
-	//ambos low cuando sale de aqui (Start)
 }
-// the setup function runs once when you press reset or power the board
-void MemoComClass::setupMemo(Chip ic) {
+
+void MemoComClass::setupMemo(Chip ic)
+{
 	pinMode(SCLPin, OUTPUT);
 	IC = ic;
 	if (IC != C02 && IC != C01)
@@ -71,7 +72,7 @@ bool MemoComClass::WBit(bool bitToWrite)
 
 	scl(LOW);
 
-	return bitToWrite;//
+	return bitToWrite;
 }
 bool MemoComClass::RBit()
 {
@@ -79,18 +80,17 @@ bool MemoComClass::RBit()
 	pinMode(SDAPin, INPUT);
 	scl(HIGH);
 
-	for (uint8_t i = 0; i < maxBits; i++)   //
-	{                           //
-		bitRW = digitalRead(SDAPin);//   1   MSB
+	for (uint8_t i = 0; i < maxBits; i++)
+	{
+		bitRW = digitalRead(SDAPin);
 	}
 	scl(LOW);
 
-	return bitRW;//
+	return bitRW;
 }
 
 bool MemoComClass::acknowledge(bool output)
 {
-	//sda(LOW);
 	bool bit = true;
 	if (output)
 	{

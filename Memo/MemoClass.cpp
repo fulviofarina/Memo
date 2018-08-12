@@ -1,6 +1,5 @@
-#include <stdio.h>
-#include <math.h>
-#include "Memo.h"
+
+#include "MemoClass.h"
 #include "MemoRW.h"
 
 // Number of the 24C02 Device to which data to be written

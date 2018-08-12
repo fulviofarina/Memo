@@ -82,14 +82,14 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Memo.h" />
+    <ClInclude Include="MemoClass.h" />
     <ClInclude Include="MemoCom.h" />
     <ClInclude Include="MemoRW.h" />
     <ClInclude Include="Tools.h" />
     <ClInclude Include="__vm\.Memo.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Memo.cpp" />
+    <ClCompile Include="MemoClass.cpp" />
     <ClCompile Include="MemoCom.cpp" />
     <ClCompile Include="MemoRW.cpp" />
     <ClCompile Include="Tools.cpp" />
