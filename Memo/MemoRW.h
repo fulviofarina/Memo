@@ -32,6 +32,11 @@ public:
 class binaryData
 {
 protected:
+	bool device[maxICBits] = { 0, 0, 0 };
+
+	bool deviceAux[maxBits] = { 1,0,1,0,0,0, 0, 0 }; //3-bit array // leave first 4 bits alone, necessary for IC 24C0x chips
+	bool memory[maxBits + C16] = { 0,0,0,0, 0, 0, 0, 0, 0 ,0,0 }; //eleven-bit array
+	bool data[maxBits] = { 0, 0, 0, 0, 0, 0, 0, 0 }; //8-bit array
 
 public:
 	
@@ -76,7 +81,7 @@ protected:
 	//Reads a word
 	void _readWord();
 	//Writes a word
-	bool _writeWord(Addrss addrs, bool hl);
+	bool _writeWord(Addrss addrs);
 
 	//binary data
 	binaryData binaryData;
@@ -98,7 +103,7 @@ public:
 	unsigned int maxAllowedLenght();
 	String readEraseAPage(unsigned int icNumber, unsigned int page, unsigned int numberOfCells =1, bool readMode = true, bool ramDo = true);
 	Results results;
-	void setup(Chip IC);
+	void setup(Chip ic, uint8_t SDAPIN = 18U, uint8_t SCLPIN = 19U);
 	
 
 	//another group

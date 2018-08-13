@@ -153,7 +153,7 @@ bool MemoRWClass::_conversionBinary(Addrss toWord, Addrss pageOr) //ADDRESSING L
 void MemoRWClass::_readWord()
 {
 	results.Data = 0;
-	MemoCom.RArray(binaryData.Data);
+	MemoCom.RArray(binaryData.Data, maxBits);
 	results.Data = ToolsClass::conversionInt(binaryData.Data, maxBits);
 }
 //Provides read or write access to a cell
@@ -166,14 +166,15 @@ void MemoRWClass::_readWritePageOrCell(Addrss toDo, Addrss pageOr, unsigned int 
 	while (notok)
 	{
 		MemoCom.startStop(true);
-		notok = _writeWord(Dev, pageOr == Current);
+		binaryData.DeviceAux[7] = (pageOr == Current);
+		notok = _writeWord(Dev);
 	}
 
 	if (toDo != Write)
 	{
 		if (pageOr != Current) //random memory access
 		{
-			notok = _writeWord(Memm, LOW); //for random
+			notok = _writeWord(Memm); //for random
 
 			if (notok)
 			{
@@ -186,7 +187,8 @@ void MemoRWClass::_readWritePageOrCell(Addrss toDo, Addrss pageOr, unsigned int 
 			while (notok)
 			{
 				MemoCom.startStop(true);
-				notok = _writeWord(Dev, HIGH); //high to read, low to write
+				binaryData.DeviceAux[7] = HIGH;
+				notok = _writeWord(Dev); //high to read, low to write
 			}
 
 			if (pageOr == Page) _readAPage(sizePage);
@@ -201,7 +203,7 @@ void MemoRWClass::_readWritePageOrCell(Addrss toDo, Addrss pageOr, unsigned int 
 	}
 	else
 	{
-		notok = _writeWord(Memm, LOW); //for random
+		notok = _writeWord(Memm); //for random
 
 		if (notok)
 		{
@@ -212,7 +214,7 @@ void MemoRWClass::_readWritePageOrCell(Addrss toDo, Addrss pageOr, unsigned int 
 		{
 			_writeAPage();
 		}
-		else notok = _writeWord(Info, LOW); //CURRENT OR RANDOM
+		else notok = _writeWord(Info); //CURRENT OR RANDOM
 	}
 
 	if (results.cE > 0 || notok)
@@ -224,7 +226,7 @@ void MemoRWClass::_readWritePageOrCell(Addrss toDo, Addrss pageOr, unsigned int 
 
 	_showWords(toDo, pageOr);
 }
-bool MemoRWClass::_writeWord(Addrss addrs, bool hl) //this is always the same except the 8th bit
+bool MemoRWClass::_writeWord(Addrss addrs) //this is always the same except the 8th bit
 {
 	char toShow = '0';
 
@@ -232,35 +234,41 @@ bool MemoRWClass::_writeWord(Addrss addrs, bool hl) //this is always the same ex
 	{
 	case Dev:
 	{
-		toShow=('D');
-		binaryData.DeviceAux[7] = hl;
-		MemoCom.WArray(binaryData.DeviceAux);
+		//toShow='D';
+		Serial.print('D');
+		MemoCom.WArray(binaryData.DeviceAux, maxBits);
 		break;
 	}
 	case Memm:
 	{
-		toShow=('C');
-		MemoCom.WArray(binaryData.Memory);
+		//toShow='C';
+		Serial.print('C');
+		MemoCom.WArray(binaryData.Memory, maxBits);
 		break;
 	}
 	case Info:
 	{
-		toShow=('I');
-		MemoCom.WArray(binaryData.Data);
+	//	toShow='I';
+		Serial.print('I');
+		MemoCom.WArray(binaryData.Data, maxBits);
 		break;
 	}
+
 	}
 	bool notok = MemoCom.acknowledge(false);
 
 	if (notok)
 	{
-		toShow=('E');
-		
+		//toShow='E';
+		Serial.print('E');
 	}
-	else toShow=('0');
-
+	else
+	{
+	//	toShow = ('0');
+		Serial.print('0');
+	}
 #ifdef DEBUG
-	Serial.print(toShow);
+	//Serial.print(toShow);
 #endif // DEBUG
 
 
@@ -292,18 +300,13 @@ void binaryData::init()
 {
 
 
-	bool device[maxICBits] = { 0, 0, 0 };
-
-	bool deviceAux[maxBits] = { 1,0,1,0,0,0, 0, 0 }; //3-bit array // leave first 4 bits alone, necessary for IC 24C0x chips
-	bool memory[maxBits + C16] = { 0,0,0,0, 0, 0, 0, 0, 0 ,0,0 }; //eleven-bit array
-	bool data[maxBits] = { 0, 0, 0, 0, 0, 0, 0, 0 }; //8-bit array
 	//bool page[maxBits * 2][maxBits];
 
 
-	Device = device; //3-bit array
-	DeviceAux = deviceAux; //3-bit array // leave first 4 bits alone, necessary for IC 24C0x chips
-	Memory = memory; //eleven-bit array
-	Data = data; //8-bit array
+	Device = &device[0]; //3-bit array
+	DeviceAux = &deviceAux[0]; //3-bit array // leave first 4 bits alone, necessary for IC 24C0x chips
+	Memory = &memory[0]; //eleven-bit array
+	Data = &data[0]; //8-bit array
 
 	Page = (bool **)malloc(sizeof(bool *) * maxBits * 2);
 	for (unsigned int i = 0; i < maxBits * 2; ++i)
@@ -360,26 +363,11 @@ void binaryData::init()
 void MemoRWClass::_writeAPage()
 {
 
-	
-
 	results.trials = maxAllowedLenght();
 	results.cE = 0;
-	results.cE  = MemoCom.WArray(binaryData.Page, binaryData.pageIter);
+	results.cE  = MemoCom.WArray(binaryData.Page, binaryData.pageIter, maxBits);
 
-	/*
-	for (unsigned int j = 0; j < binaryData.pageIter; j++) //page iter keeps last memmory cell index within page
-	{
-		//send a data memmory (cell data; memmory data)
-		for (unsigned int i = 0; i < maxBits; i++)
-		{
-			MemoCom.WBit(binaryData.Page[j][i]);
-		}
-
-		bool notok = MemoCom.acknowledge(false);
-
-		if (notok) results.cE++;
-	}
-	*/
+	
 
 }
 
@@ -388,10 +376,10 @@ unsigned int MemoRWClass::maxAllowedLenght()
 	return MemoCom.maxAllowedLength;
 }
 
-void MemoRWClass::setup(Chip IC)
+void MemoRWClass::setup(Chip ic, uint8_t SDAPIN = 18U, uint8_t SCLPIN = 19U)
 {
 	binaryData.init();
-	MemoCom.setup(IC);
+	MemoCom.setup(IC,SDAPIN,SCLPIN);
 
 }
 
@@ -405,7 +393,9 @@ void MemoRWClass::readWriteMsg(unsigned int icNumber, unsigned int page, bool re
 {
 	results.Page = "";
 
-	unsigned int size = msgSize;
+	unsigned int sizeOfPage = maxAllowedLenght();
+
+	unsigned int size = sizeOfPage;
 	if (!readMode) size = msg.length();
 	//this value remains fixed
 	unsigned int initialPage = page;
@@ -413,7 +403,7 @@ void MemoRWClass::readWriteMsg(unsigned int icNumber, unsigned int page, bool re
 	unsigned	int u = 0; //for iterating the msg array
 	unsigned int mB = 0; //keeps track of the iteration of msg array when write pages
 
-	unsigned int sizeOfPage = maxAllowedLenght();
+
 	//so at every MaxBits =8 it resets the dataTxt for a new page-write
 
 	while (u < size) //make packets of text
@@ -531,7 +521,7 @@ String MemoRWClass::readEraseAPage(unsigned int icNumber, unsigned int page, uns
 
 		if (cellCount == maxAllowedLenght() - 1)
 		{
-			readWriteMsg(icNumber, page, readMode, msg.c_str(), maxAllowedLenght());
+			readWriteMsg(icNumber, page, readMode, msg.c_str());
 			cellCount = 0;
 			if (!readMode) msg = "";
 			else msg += results.Page;

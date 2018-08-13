@@ -7,10 +7,7 @@
 #include "WProgram.h"
 #endif
 
-//a4
-#define SDAPin 18U
-//a5
-#define SCLPin 19U
+
 
 #define maxLenght 256
 #define maxBits 8
@@ -19,7 +16,7 @@
 #define totalMaxBits  (maxBits * 2) // i.e. 16
 #define fixedBias  (maxLenght - totalMaxBits) //i.e. 256-16 = 240
 
-#define tiempo 3
+#define tiempo 2
 #define stoptime  3000
 
 enum Chip
@@ -34,6 +31,10 @@ enum Chip
 class MemoComClass
 {
 protected:
+	//a4
+	uint8_t SDAPin = 18U;
+		//a5
+		uint8_t SCLPin = 19U;
 	void scl(bool hl);
 	bool sda(bool hl, bool write);
 
@@ -49,12 +50,11 @@ public:
 	bool acknowledge(bool output);
 
 	void startStop(bool started);
+	void setup(Chip ic, uint8_t SDAPIN = 18U, uint8_t SCLPIN = 19U);
+	unsigned int WArray(bool**  thearray, unsigned int rowLength, unsigned int colength);
+	void WArray(bool * thearray, unsigned int length);
 
-	void setup(Chip ic);
-	unsigned int WArray(bool**  thearray, unsigned int rowLength);
-	void WArray(bool * thearray);
-
-	void RArray(bool *therrary);
+	void RArray(bool *therrary, unsigned int length);
 	
 };
 

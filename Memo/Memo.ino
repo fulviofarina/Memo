@@ -13,7 +13,7 @@ Author:	Fulvio
 // the setup function runs once when you press reset or power the board
 void setup(void)
 {
-	Serial.begin(153600);
+	Serial.begin(9600);
 
 
 	//This block can be invoked in setup() or loop()
@@ -53,15 +53,20 @@ void loop(void) {
 	//page to start writing the message
 	unsigned int initialPage = 0;
 	//writes the message 
-	Memo.writeMessage(deviceNumber, initialPage, msg);
+	//Memo.writeMessage(deviceNumber, initialPage, msg);
+
+	Serial.println("ok");
 
 	delay(1000);
 	Serial.println();
 	Serial.println();
 
+
+	Serial.println("ok");
+
 	//3)
 	//reads all the EEPROM content
-	Memo.readAll(deviceNumber);
+	//Memo.readAll(deviceNumber);
 	
 	delay(1000);
 

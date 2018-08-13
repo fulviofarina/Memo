@@ -2,8 +2,15 @@
 
 void MemoComClass::scl(bool hl)
 {
-	digitalWrite(SCLPin, hl);
-
+	if (hl)
+	{
+		pinMode(SCLPin, INPUT);
+	}
+	else
+		{
+		pinMode(SCLPin, OUTPUT);
+		digitalWrite(SCLPin, hl);
+	}
 	delayMicroseconds(tiempo);
 }
 bool MemoComClass::sda(bool hl, bool write)
@@ -11,9 +18,16 @@ bool MemoComClass::sda(bool hl, bool write)
 	bool read1 = false;
 	if (write)
 	{
-		pinMode(SDAPin, OUTPUT);
-
-		digitalWrite(SDAPin, hl);
+	//	pinMode(SDAPin, OUTPUT);
+		if (hl)
+		{
+			pinMode(SDAPin, INPUT);
+		}
+		else
+		{
+			pinMode(SDAPin, OUTPUT);
+			digitalWrite(SDAPin, hl);
+		}
 	}
 	else
 	{
@@ -49,9 +63,11 @@ void MemoComClass::startStop(bool start1)
 	}
 }
 
-void MemoComClass::setup(Chip ic)
+void MemoComClass::setup(Chip ic, uint8_t SDAPIN = 18U, uint8_t SCLPIN = 19U)
 {
-	pinMode(SCLPin, OUTPUT);
+	
+	SDAPin = SDAPIN;
+	SCLPin = SCLPIN;
 	IC = ic;
 	if (IC != C02 && IC != C01)
 	{
@@ -68,28 +84,28 @@ void MemoComClass::WBit(bool bitToWrite)
 
 	scl(LOW);
 }
-void MemoComClass::RArray(bool * therrary)
+void MemoComClass::RArray(bool * therrary, unsigned int length)
 {
-	for (unsigned int j = 0; j < maxBits; j++)
+	for (unsigned int j = 0; j <length; j++)
 	{
 		therrary[j] = RBit();
 	}
 }
-void MemoComClass::WArray(bool * thearray)
+void MemoComClass::WArray(bool * thearray, unsigned int length)
 {
-	for (unsigned int i = 0; i < maxBits; i++)
+	for (unsigned int i = 0; i < length; i++)
 	{
 		WBit(thearray[i]);
 	}
 }
 
-unsigned int MemoComClass::WArray(bool ** thearray, unsigned int pageIters)
+unsigned int MemoComClass::WArray(bool ** thearray, unsigned int pageIters, unsigned int colength)
 {
 	unsigned int count = 0;
 	for (unsigned int j = 0; j < pageIters; j++) //page iter keeps last memmory cell index within page
 	{
 		//send a data memmory (cell data; memmory data)
-		for (unsigned int i = 0; i < maxBits; i++)
+		for (unsigned int i = 0; i < colength; i++)
 		{
 			WBit(thearray[j][i]);
 		}
