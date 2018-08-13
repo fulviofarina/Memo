@@ -13,7 +13,7 @@ bool ToolsClass::doBinary(unsigned int data, unsigned int iter)
 	return r;
 }
 
-int ToolsClass::power( int x,  int y)
+int ToolsClass::power(int x, int y)
 {
 	if (y == 0)
 	{

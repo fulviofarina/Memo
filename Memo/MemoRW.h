@@ -11,13 +11,11 @@
 
 #include "Tools.h"
 
-
 //#define DEBUG 1
 
 class Results
 {
 protected:
-
 
 public:
 	unsigned int Device = 0;   // In the range 0 - 7
@@ -39,10 +37,10 @@ protected:
 	bool data[maxBits] = { 0, 0, 0, 0, 0, 0, 0, 0 }; //8-bit array
 
 public:
-	
+
 	void init();
 	bool* Device;  //3-bit array
-	bool* DeviceAux;//  
+	bool* DeviceAux;//
 	bool* Memory;//  //eleven-bit array
 	bool* Data;//  //8-bit array
 	bool** Page;// [maxBits * 2][maxBits];
@@ -73,8 +71,8 @@ protected:
 
 	//converts
 	bool _conversionBinary(Addrss toWord, Addrss pageOr);
-	
-    //Reads a page
+
+	//Reads a page
 	void _readAPage(unsigned int nroOfMemCells);
 	//Writes a page
 	void _writeAPage();
@@ -98,18 +96,15 @@ public:
 	void readCell(unsigned int ICnumber, unsigned int address);
 
 	void readEraseAll(unsigned int iCNumber, bool readMode = true, bool ramDo = true);
-	void readErase(unsigned int icNumber, unsigned int startAddrss, unsigned int numberOfCells =1, bool readMode = true, bool ramDo = true);
+	void readErase(unsigned int icNumber, unsigned int startAddrss, unsigned int numberOfCells = 1, bool readMode = true, bool ramDo = true);
 
 	unsigned int maxAllowedLenght();
-	String readEraseAPage(unsigned int icNumber, unsigned int page, unsigned int numberOfCells =1, bool readMode = true, bool ramDo = true);
+	const char * readEraseAPage(unsigned int icNumber, unsigned int page, unsigned int numberOfCells = 1, bool readMode = true, bool ramDo = true);
 	Results results;
 	void setup(Chip ic, uint8_t SDAPIN = 18U, uint8_t SCLPIN = 19U);
-	
 
 	//another group
 	void readWriteMsg(unsigned int icNumber, unsigned int page, bool readMode = true, String msg = "", unsigned int msgSize = 0);
-
-
 };
 
 #endif

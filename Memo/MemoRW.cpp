@@ -4,7 +4,6 @@
 
 void MemoRWClass::_prepareWords(Addrss toDo, Addrss pageOr)
 {
-
 	//when writing
 	if (toDo == Write) //if I want to read/Write I want this, but only when random or paging. Current only when weiring
 	{
@@ -23,12 +22,9 @@ void MemoRWClass::_prepareWords(Addrss toDo, Addrss pageOr)
 		//results (may vary) structure and calls to _giveZipCode fucntion (might vary nam as well)
 		_conversionBinary(Info, pageOr);
 	}
-
 }
 void MemoRWClass::_showWords(Addrss toDo, Addrss pageOr)
 {
-
-
 	results.Device = ToolsClass::conversionInt(binaryData.Device, maxICBits);
 
 	Serial.print("@ IC=");
@@ -53,7 +49,7 @@ void MemoRWClass::_showWords(Addrss toDo, Addrss pageOr)
 	}
 	else Serial.print("W\t");
 	Serial.print("* E" + String(results.cE));
-	Serial.print(" K" +  String(results.trials - results.cE)); //print the number of errors and OK's
+	Serial.print(" K" + String(results.trials - results.cE)); //print the number of errors and OK's
 	Serial.print(" *\t");
 	if (pageOr != Page)
 	{
@@ -69,8 +65,6 @@ void MemoRWClass::_showWords(Addrss toDo, Addrss pageOr)
 	else
 	{
 		Serial.print("P=\t" + results.Page);
-	
-	
 	}
 	Serial.println();
 }
@@ -130,7 +124,7 @@ bool MemoRWClass::_conversionBinary(Addrss toWord, Addrss pageOr) //ADDRESSING L
 			unsigned int max = results.Page.length(); //take a lenght up to maxOfBits
 			for (unsigned int u = 0; u < max; u++)
 			{
-				unsigned int aux = (unsigned int) results.Page[u];
+				unsigned int aux = (unsigned int)results.Page[u];
 				for (unsigned int j = 0; j < maxBits; j++)
 				{
 					binaryData.Page[binaryData.pageIter][j] = ToolsClass::doBinary(aux, j);
@@ -138,7 +132,7 @@ bool MemoRWClass::_conversionBinary(Addrss toWord, Addrss pageOr) //ADDRESSING L
 				binaryData.pageIter++;
 			}
 		}
-		else 
+		else
 		{
 			for (unsigned int i = 0; i < maxBits; i++)
 			{
@@ -220,7 +214,6 @@ void MemoRWClass::_readWritePageOrCell(Addrss toDo, Addrss pageOr, unsigned int 
 	if (results.cE > 0 || notok)
 	{
 		return _readWritePageOrCell(toDo, pageOr, sizePage);
-
 	}
 	MemoCom.startStop(false);
 
@@ -248,12 +241,11 @@ bool MemoRWClass::_writeWord(Addrss addrs) //this is always the same except the 
 	}
 	case Info:
 	{
-	//	toShow='I';
+		//	toShow='I';
 		Serial.print('I');
 		MemoCom.WArray(binaryData.Data, maxBits);
 		break;
 	}
-
 	}
 	bool notok = MemoCom.acknowledge(false);
 
@@ -264,15 +256,12 @@ bool MemoRWClass::_writeWord(Addrss addrs) //this is always the same except the 
 	}
 	else
 	{
-	//	toShow = ('0');
+		//	toShow = ('0');
 		Serial.print('0');
 	}
 #ifdef DEBUG
 	//Serial.print(toShow);
 #endif // DEBUG
-
-
-
 
 	return  notok;
 }
@@ -298,10 +287,7 @@ void MemoRWClass::_readAPage(unsigned int nroOfMemCells)
 
 void binaryData::init()
 {
-
-
 	//bool page[maxBits * 2][maxBits];
-
 
 	Device = &device[0]; //3-bit array
 	DeviceAux = &deviceAux[0]; //3-bit array // leave first 4 bits alone, necessary for IC 24C0x chips
@@ -312,16 +298,13 @@ void binaryData::init()
 	for (unsigned int i = 0; i < maxBits * 2; ++i)
 	{
 		Page[i] = (bool *)malloc(sizeof(bool) * maxBits);
-
 	}
 	for (size_t i = 0; i < maxBits * 2; i++)
 	{
 		for (size_t j = 0; j < maxBits; j++)
 		{
 			Page[j][i] = false;
-		
 		}
-		
 	}
 
 #ifdef  DEBUG
@@ -356,19 +339,12 @@ void binaryData::init()
 	Serial.println();
 
 #endif //  DEBUG
-
-
-
 }
 void MemoRWClass::_writeAPage()
 {
-
 	results.trials = maxAllowedLenght();
 	results.cE = 0;
-	results.cE  = MemoCom.WArray(binaryData.Page, binaryData.pageIter, maxBits);
-
-	
-
+	results.cE = MemoCom.WArray(binaryData.Page, binaryData.pageIter, maxBits);
 }
 
 unsigned int MemoRWClass::maxAllowedLenght()
@@ -379,8 +355,7 @@ unsigned int MemoRWClass::maxAllowedLenght()
 void MemoRWClass::setup(Chip ic, uint8_t SDAPIN = 18U, uint8_t SCLPIN = 19U)
 {
 	binaryData.init();
-	MemoCom.setup(IC,SDAPIN,SCLPIN);
-
+	MemoCom.setup(ic, SDAPIN, SCLPIN);
 }
 
 ///////////////////////////////
@@ -403,7 +378,6 @@ void MemoRWClass::readWriteMsg(unsigned int icNumber, unsigned int page, bool re
 	unsigned	int u = 0; //for iterating the msg array
 	unsigned int mB = 0; //keeps track of the iteration of msg array when write pages
 
-
 	//so at every MaxBits =8 it resets the dataTxt for a new page-write
 
 	while (u < size) //make packets of text
@@ -421,7 +395,6 @@ void MemoRWClass::readWriteMsg(unsigned int icNumber, unsigned int page, bool re
 		//when a page Msg has been formed send it to the given page
 		if (mB == sizeOfPage - 1)
 		{
-		
 			_giveZipCode(icNumber, page);
 
 			if (!readMode)
@@ -489,9 +462,9 @@ void MemoRWClass::readEraseAll(unsigned int iCNumber, bool readMode = true, bool
 	}
 }
 
-void MemoRWClass::readErase(unsigned int icNumber, unsigned int startAddrss, unsigned int numberOfCells =1, bool readMode = true, bool ramDo = true)
+void MemoRWClass::readErase(unsigned int icNumber, unsigned int startAddrss, unsigned int numberOfCells = 1, bool readMode = true, bool ramDo = true)
 {
-	unsigned int i; 
+	unsigned int i;
 
 	for (unsigned int u = 0; u < numberOfCells; u++)
 	{
@@ -502,7 +475,7 @@ void MemoRWClass::readErase(unsigned int icNumber, unsigned int startAddrss, uns
 	}
 }
 
-String MemoRWClass::readEraseAPage(unsigned int icNumber, unsigned int page, unsigned int numberOfCells =1, bool readMode = true, bool ramDo = true)
+const char * MemoRWClass::readEraseAPage(unsigned int icNumber, unsigned int page, unsigned int numberOfCells = 1, bool readMode = true, bool ramDo = true)
 {
 	unsigned int i = 48;
 	String msg = "";
@@ -530,8 +503,5 @@ String MemoRWClass::readEraseAPage(unsigned int icNumber, unsigned int page, uns
 		else cellCount++;
 	}
 
-	return msg;
+	return msg.c_str();
 }
-
-
-

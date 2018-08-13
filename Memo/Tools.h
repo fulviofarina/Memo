@@ -20,7 +20,7 @@ protected:
 public:
 	//	static String  conversionToBase(int number_to_convert, uint8_t  base, const uint8_t outbits, const char alphaB[]);
 	static unsigned int conversionInt(unsigned int * arrBits, int arrSize, unsigned int base = 2);
-	static int power( int x,  int y);
+	static int power(int x, int y);
 	static bool doBinary(unsigned int data, unsigned int iter);
 	static unsigned int conversionInt(bool *arrBits, int arrSize, unsigned int base = 2);
 

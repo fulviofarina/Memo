@@ -7,7 +7,7 @@ void MemoComClass::scl(bool hl)
 		pinMode(SCLPin, INPUT);
 	}
 	else
-		{
+	{
 		pinMode(SCLPin, OUTPUT);
 		digitalWrite(SCLPin, hl);
 	}
@@ -18,7 +18,7 @@ bool MemoComClass::sda(bool hl, bool write)
 	bool read1 = false;
 	if (write)
 	{
-	//	pinMode(SDAPin, OUTPUT);
+		//	pinMode(SDAPin, OUTPUT);
 		if (hl)
 		{
 			pinMode(SDAPin, INPUT);
@@ -65,7 +65,6 @@ void MemoComClass::startStop(bool start1)
 
 void MemoComClass::setup(Chip ic, uint8_t SDAPIN = 18U, uint8_t SCLPIN = 19U)
 {
-	
 	SDAPin = SDAPIN;
 	SCLPin = SCLPIN;
 	IC = ic;
@@ -86,7 +85,7 @@ void MemoComClass::WBit(bool bitToWrite)
 }
 void MemoComClass::RArray(bool * therrary, unsigned int length)
 {
-	for (unsigned int j = 0; j <length; j++)
+	for (unsigned int j = 0; j < length; j++)
 	{
 		therrary[j] = RBit();
 	}
@@ -116,7 +115,6 @@ unsigned int MemoComClass::WArray(bool ** thearray, unsigned int pageIters, unsi
 	}
 	return count;
 }
-
 
 bool MemoComClass::RBit()
 {

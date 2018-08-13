@@ -1,6 +1,5 @@
 #include "MemoClass.h"
 
-
 void MemoClass::startt()
 {
 	timeRegister.started = micros();
@@ -13,66 +12,70 @@ void MemoClass::endt()
 
 void MemoClass::setup(Chip ic)
 {
-
 	MemoRW.setup(ic);
 }
 
-void MemoClass::writeMessage(unsigned int icNumber, unsigned int page, String msg)
+void MemoClass::writeMessage(unsigned int deviceNumber, unsigned int page, String msg)
 {
 	startt();
-	MemoRW.readWriteMsg(icNumber, page, false, msg, 0);
+	MemoRW.readWriteMsg(deviceNumber, page, false, msg, 0);
 	endt();
 }
-void MemoClass::write(unsigned int icNumber, unsigned int address, unsigned int data)
+void MemoClass::write(unsigned int deviceNumber, unsigned int address, unsigned int data)
 {
 	startt();
-	MemoRW.writeCell(icNumber, address, data);
+	MemoRW.writeCell(deviceNumber, address, data);
 	endt();
 }
 
-
-void MemoClass::read(unsigned int icNumber, unsigned int startAddress, unsigned int numberOfCells = 1)
+void MemoClass::read(unsigned int deviceNumber, unsigned int startAddress, unsigned int numberOfCells = 1)
 {
 	startt();
-	MemoRW.readErase(icNumber, startAddress, numberOfCells, true, false);
+	MemoRW.readErase(deviceNumber, startAddress, numberOfCells, true, false);
 	endt();
 }
-void MemoClass::erase(unsigned int icNumber, unsigned int startAddress, unsigned int numberOfCells = 1, bool randomValue = false)
+void MemoClass::erase(unsigned int deviceNumber, unsigned int startAddress, unsigned int numberOfCells = 1, bool randomValue = false)
 {
 	startt();
 	//Serial.println("the number is");
 	//Serial.println(numberOfCells);
-	MemoRW.readErase(icNumber, startAddress, numberOfCells, false, randomValue);
-	
+	MemoRW.readErase(deviceNumber, startAddress, numberOfCells, false, randomValue);
+
 	endt();
 }
 
-String MemoClass::readPage(unsigned int icNumber, unsigned int page, unsigned int specificLength = 0)
+const char * MemoClass::readPage(unsigned int deviceNumber, unsigned int page, unsigned int specificLength = 0)
 {
 	startt();
 	if (specificLength == 0) specificLength = MemoRW.maxAllowedLenght();
-	String msg = MemoRW.readEraseAPage(icNumber, page, specificLength, true, false);
+	const char * msg = MemoRW.readEraseAPage(deviceNumber, page, specificLength, true, false);
 	endt();
 	return msg;
 }
-void MemoClass::erasePage(unsigned int icNumber, unsigned int page, bool randomValue = false)
+void MemoClass::erasePage(unsigned int deviceNumber, unsigned int page, bool randomValue = false)
 {
 	startt();
-	MemoRW.readEraseAPage(icNumber, page, MemoRW.maxAllowedLenght(), false, randomValue);
+	MemoRW.readEraseAPage(deviceNumber, page, MemoRW.maxAllowedLenght(), false, randomValue);
 	endt();
 }
-
-
-void MemoClass::readAll(unsigned int iCNumber)
+unsigned int MemoClass::cellValue()
+{
+	return MemoRW.results.Data;
+}
+const char* MemoClass::pageValue()
+{
+	return MemoRW.results.Page.c_str();
+}
+void MemoClass::readAll(unsigned int deviceNumber)
 {
 	startt();
-	MemoRW.readEraseAll(iCNumber, true, false);
+	MemoRW.readEraseAll(deviceNumber, true, false);
 	endt();
 }
-void MemoClass::eraseAll(unsigned int iCNumber, bool randomValue = false)
+void MemoClass::eraseAll(unsigned int deviceNumber, bool randomValue = false)
 {
 	startt();
-	MemoRW.readEraseAll(iCNumber, false, randomValue);
+	MemoRW.readEraseAll(deviceNumber, false, randomValue);
 	endt();
 }
 

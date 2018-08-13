@@ -7,8 +7,6 @@
 #include "WProgram.h"
 #endif
 
-
-
 #define maxLenght 256
 #define maxBits 8
 #define maxICBits 3
@@ -33,8 +31,8 @@ class MemoComClass
 protected:
 	//a4
 	uint8_t SDAPin = 18U;
-		//a5
-		uint8_t SCLPin = 19U;
+	//a5
+	uint8_t SCLPin = 19U;
 	void scl(bool hl);
 	bool sda(bool hl, bool write);
 
@@ -55,7 +53,6 @@ public:
 	void WArray(bool * thearray, unsigned int length);
 
 	void RArray(bool *therrary, unsigned int length);
-	
 };
 
 #endif
