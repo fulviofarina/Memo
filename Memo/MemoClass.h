@@ -60,7 +60,7 @@ public:
 	void eraseAll(unsigned int deviceNumber, bool randomValue = false);
 
 	//setups the library
-	void setup(Chip ic);
+	void setup(Chip ic, uint8_t SDAPIN = 18U, uint8_t SCLPIN = 19U);
 };
 
 #endif

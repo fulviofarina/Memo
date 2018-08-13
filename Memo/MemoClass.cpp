@@ -10,9 +10,9 @@ void MemoClass::endt()
 	timeRegister.elapsedMiliseconds = (timeRegister.ended - timeRegister.started)*1e-3;
 }
 
-void MemoClass::setup(Chip ic)
+void MemoClass::setup(Chip ic, uint8_t SDAPIN = 18U, uint8_t SCLPIN = 19U)
 {
-	MemoRW.setup(ic);
+	MemoRW.setup(ic, SDAPIN,SCLPIN);
 }
 
 void MemoClass::writeMessage(unsigned int deviceNumber, unsigned int page, String msg)
