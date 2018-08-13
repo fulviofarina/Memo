@@ -20,37 +20,42 @@ public:
 	double elapsedMiliseconds;
 };
 
+
+//Wrapper Class for end-user EEPROM manipulation
 class MemoClass
 {
 protected:
 
 	//NOT FIXED
-	void readCurrent(int IC);
+	void readCurrent(unsigned int IC);
 
-	void testErase();
+	
 	void startt();
 	void endt();
-	//NOT FIXED
-	void readCurrentloop(int IC);
-
+	
 	MemoRWClass MemoRW;
 
 	Times timeRegister;
 
+	
+
 public:
 
-	void writeCell(int icNumber, unsigned int address, int data);
+	void writeMessage(unsigned int icNumber, unsigned int page, String msg);
+	void write(unsigned int icNumber, unsigned int address, unsigned int data);
+	void erasePage(unsigned int icNumber, unsigned int page, bool randomValue = false);
 
-	void readCell(int ICnumber, unsigned int address);
+//	unsigned int * ConArray;
 
-	void readWriteMsg(int icNumber, int page, bool read, String msg, int msgSize);
-	//per cell erase, starting at startadress and given by lenght...
+	String readPage(unsigned int icNumber, unsigned int page, unsigned int specificLength = 0);
 
-	void readErase(int icNumber, int startAddrss, int lenght, bool readMode = true, bool ramDo = true);
+	void read(unsigned int icNumber, unsigned int startAddrss, unsigned int numberOfCells =1);
 
-	String readEraseAPage(int icNumber, int Page, int lenght, bool readMode = true, bool ramDo = true);
+	void erase(unsigned int icNumber, unsigned int startAddrss, unsigned int numberOfCells =1, bool randomValue = false);
+	void readAll(unsigned int icNumber);
+	void eraseAll(unsigned int icNumber, bool randomValue = false);
 
-	void readEraseAll(int iCNumber, bool readMode = true, bool ramDo = true);
+	
 	void setup(Chip ic);
 };
 

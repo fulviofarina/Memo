@@ -1,11 +1,6 @@
 
 #include "MemoClass.h"
 
-
-
-//#include "MemoRW.h"
-//#include "Memo.h"
-
 /*
 Name:		Memo.ino
 Created:	8/8/2018 21:04:32
@@ -14,109 +9,129 @@ Author:	Fulvio
 
  MemoClass Memo;
 
-//#define writeall 1
-//#define readAll 1
 
 // the setup function runs once when you press reset or power the board
 void setup(void)
 {
-	Serial.begin(9600);
-	Chip chipy = C04;
-	Memo.setup(chipy);
-}
+	Serial.begin(153600);
 
-// Number of the 24C02 Device to which data to be written
+
+	//This block can be invoked in setup() or loop()
+
+	//Select the 24Cxx series chip to employ
+	Chip chipy = C04;
+	//Setup for the given chip
+	Memo.setup(chipy);
+
+
+}
 
 
 void loop(void) {
 
-	Memo.readEraseAll(0, false, false);
+	/*THE DATA IS DISPLAYED IN THE SERIAL CONSOLE*/
+	/*BUT CAN BE ACCESSED PROGRAMATICALLY*/
 
+	//1)
+	// IC Number to write data. A maximum of
+	// 8 devices for 24C02
+	// 4 devices for 24C04
+	// 2 devices for 24C08
+	// 1 device for 24C16
+	int deviceNumber = 0; //  IC number = 0 for my example Chip 24C04
+	 //erases all EEPROM data with: a) 0s or b) random values
+	bool randomValues = false; //will use 0s instead
+	Memo.eraseAll(deviceNumber, randomValues);
 
-	String msg = "probando a ver que tan largo puede ser esto y si funciona pues funciona y deberian entrar todo ñame y toda papa que yo quiera que entre en este eeprom de bajo consumo y de tan precaria forma de pensar cuando pensé que tenía que hacer ésto y todavía creo que queda espacio para por lo menos 3 simbolos mas y un abecedario de oportunidades si o no? SI pues insisto que tengo que meterle mas MIERDA HORRIBLE A ESTO y no se termina de LLENAR NUEO";
+	Serial.println();
+	Serial.println();
 
-	Memo.readWriteMsg(0, 0, false, msg, 0);
-	//delay(1000);
-	//Memo.readWriteMsg(0, 0, true, msg, msg.length());
+	delay(1000);
+	//2)	
+	//write a message to the EEPROM
+	String msg = "Testing a message";
+	//page to start writing the message
+	unsigned int initialPage = 0;
+	//writes the message 
+	Memo.writeMessage(deviceNumber, initialPage, msg);
 
+	delay(1000);
+	Serial.println();
+	Serial.println();
+
+	//3)
+	//reads all the EEPROM content
+	Memo.readAll(deviceNumber);
 	
-	Memo.readEraseAll(0, false, true);
+	delay(1000);
 
-	delay(2000);
+	Serial.println();
+	Serial.println();
 
-#if defined (writeAll)
-	Memo.readEraseAll(0, false, false);
-	delay(2000);
-	Memo.readEraseAll(1, false, false);
-	delay(2000);
-	Memo.readEraseAll(2, false, false);
-	delay(2000);
-#endif
-
+	//4)	
+	//choose an address
+	unsigned int address = 132;
+	//erases the address content
+	Memo.erase(deviceNumber, address);
 	
+	Serial.println();
+	Serial.println();
+	
+	unsigned int address2 = 168;
+	randomValues = true; //will use a random value instead of 0's
+	 //erases the address content by inserting a random value on it
+	Memo.erase(deviceNumber, address2, 1, randomValues);
 
-#if defined (readAll)
-	Memo.readEraseAll(0, false, true);
-	delay(2000);
+	Serial.println();
+	Serial.println();
+	
+	//5)	
+	unsigned int address3 = 100;
+	//erase the address content plus 3 more (contiguos) cells
+	//with 0's
+	Memo.erase(deviceNumber, address3, 3, randomValues);
 
-	Memo.readEraseAll(1, false, true);
-	delay(2000);
-	Memo.readEraseAll(2, false, true);
-	delay(2000);
-#endif
+	Serial.println();
+	Serial.println();
+	//6)
+	//unsigned int address3 = 200;
+	//reads the cell adddress plus 3 contiguos cells
+	Memo.read(deviceNumber, address3, 3);
 
-	Serial.println("*************");
+	Serial.println();
+	Serial.println();
+	//7)
+	//assign a value
+	unsigned int data = 164;
+	unsigned int address4 = 6;
+	//writes the cell adddress with the value
+	Memo.write(deviceNumber, address4, data);
+
+
+	Serial.println();
+	Serial.println();
+	//8)
+	//reads a page with a specific cellcount lenght
+	unsigned int pageNunmber = 10;
+	unsigned int specificLength = 5;
+
+	String result = Memo.readPage(deviceNumber, pageNunmber, specificLength);
+
+	Serial.println();
+	Serial.println();
+
+	//9)
+	//reads a page with a specific cellcount lenght
+	unsigned int pageNunmber2 = 13;
+
+	result = Memo.readPage(deviceNumber, pageNunmber2);
+
+	Serial.println();
+	Serial.println();
+
+
+	Serial.println("**** END *****");
 	Serial.println();
 
 
 }
-
-/*
-void loopMemo2()
-{
-String msg = "Voy a probar de nuevo porque esto no sirve";
-//	readWriteMsg(1, 0, false, msg,0);
-//readWriteMsg(1, 0, true, msg, 100);
-
-//	msg = "";
-//msg += 49;
-//	msg += 8;
-//msg = readEraseAPage(0, 0, 1024, true,true);
-//readErase(0, 0,msg.length(), true, true);
-
-//readEraseAll(1, false, false);
-Memo.readEraseAll(0, true, false);
-
-//Serial.println(msg);
-
-//	readEraseAPage(1, 0, 1024, false, true);
-//readEraseAll(0, true, false);
-
-//msg = "1234567891234567";
-//readWriteMsg(0, 42, false, msg, 0);
-
-//	readWriteMsg(0,0 , false, msg, 0);
-//readWriteMsg(1, 0, false, msg, 0);
-// readEraseAPage(0, 24, 16, false, true);
-delay(1000);
-//readEraseAPage(0, 19, 16, false, true);
-delay(1000);
-//delay(1000);
-//readEraseAPage(0, 14, 16, false, true);
-delay(1000);
-
-//readEraseAPage(0, 9, 16, false, true);
-delay(1000);
-
-//	readEraseAll(0, false, true);
-
-//readErase(0, 0, 1024, true, false);
-Serial.println(msg);
-
-//readEraseAll(1, true, false);
-
-//readEraseAll(1, false, true);
-Memo.readEraseAll(0, false, true);
-}
-
-*/

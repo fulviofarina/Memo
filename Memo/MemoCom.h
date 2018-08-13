@@ -37,9 +37,12 @@ protected:
 	void scl(bool hl);
 	bool sda(bool hl, bool write);
 
+	bool RBit();
+	void WBit(bool bitToWrite);
+
 public:
 
-	int factor;
+	unsigned int maxAllowedLength;
 
 	enum Chip IC;
 
@@ -48,9 +51,11 @@ public:
 	void startStop(bool started);
 
 	void setup(Chip ic);
+	unsigned int WArray(bool**  thearray, unsigned int rowLength);
+	void WArray(bool * thearray);
 
-	bool WBit(bool bitToWrite);
-	bool RBit();
+	void RArray(bool *therrary);
+	
 };
 
 #endif

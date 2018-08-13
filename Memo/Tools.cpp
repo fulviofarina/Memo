@@ -4,16 +4,16 @@ void ToolsClass::init()
 {
 }
 
-bool ToolsClass::doBinary(int data, int iter)
+bool ToolsClass::doBinary(unsigned int data, unsigned int iter)
 {
-	int iter1 = (1 << iter);
-	int result = data & iter1;
+	unsigned int iter1 = (1 << iter);
+	unsigned int result = data & iter1;
 	bool r = result ? 1 : 0;
 
 	return r;
 }
 
-int ToolsClass::power(int x, int y)
+int ToolsClass::power( int x,  int y)
 {
 	if (y == 0)
 	{
@@ -29,13 +29,13 @@ int ToolsClass::power(int x, int y)
 	}
 }
 //AUTOMATIC FOR BINARY
-int ToolsClass::conversionInt(bool arrBits[], int arrSize, int base = 2)
+unsigned int ToolsClass::conversionInt(bool* arrBits, int arrSize, unsigned int base = 2)
 {
-	int data = 0;
+	unsigned int data = 0;
 
-	for (uint8_t j = 0; j < arrSize; j++)
+	for (unsigned int j = 0; j < arrSize; j++)
 	{
-		int bit = arrBits[j];
+		unsigned int bit = arrBits[j];
 
 		data += bit * power(base, j); //conversion to unsigned int representing a char (or word)
 	}
@@ -43,10 +43,10 @@ int ToolsClass::conversionInt(bool arrBits[], int arrSize, int base = 2)
 }
 
 //conversion from another base
-unsigned int ToolsClass::conversionInt(unsigned int arrBits[], int arrSize, int base = 2)
+unsigned int ToolsClass::conversionInt(unsigned int * arrBits, int arrSize, unsigned int base = 2)
 {
 	unsigned int data = 0;
-	for (uint8_t j = 0; j < arrSize; j++)
+	for (unsigned int j = 0; j < arrSize; j++)
 	{
 		unsigned int bit = arrBits[j];
 

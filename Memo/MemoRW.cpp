@@ -1,43 +1,116 @@
 #include "MemoRW.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-void MemoRWClass::giveZipCode(int ICnumber, unsigned int address)
+void MemoRWClass::_prepareWords(Addrss toDo, Addrss pageOr)
 {
-	z.Device = ICnumber;
-	z.Memory = address;
-}
 
-bool MemoRWClass::conversionBinary(Addrss toWord, Addrss pageOr) //ADDRESSING LOOP
+	//when writing
+	if (toDo == Write) //if I want to read/Write I want this, but only when random or paging. Current only when weiring
+	{
+		_conversionBinary(Memm, pageOr);
+	}
+	//when reading
+	else if (pageOr != Current) _conversionBinary(Memm, pageOr);
+
+	//always do this, mark the device
+	_conversionBinary(Dev, pageOr);
+	if (toDo == Write)
+	{
+		//make conversion of data or page to binary
+		//it is supposed that the user has already given
+		//device, memory and, word or full-page data through the
+		//results (may vary) structure and calls to _giveZipCode fucntion (might vary nam as well)
+		_conversionBinary(Info, pageOr);
+	}
+
+}
+void MemoRWClass::_showWords(Addrss toDo, Addrss pageOr)
+{
+
+
+	results.Device = ToolsClass::conversionInt(binaryData.Device, maxICBits);
+
+	Serial.print("@ IC=");
+	Serial.print(results.Device, DEC);
+	Serial.print("\t");
+	if (toDo != Write)
+	{
+		if (pageOr == Current)
+		{
+			_conversionBinary(Memm, pageOr);
+		}
+	}
+
+	Serial.print("M=");
+	results.Memory = ToolsClass::conversionInt(binaryData.Memory, maxBits + C16);
+	Serial.print(results.Memory, DEC);
+	Serial.print("\t");
+	if (toDo != Write)
+	{
+		Serial.print("R\t");
+		_conversionBinary(Info, pageOr);
+	}
+	else Serial.print("W\t");
+	Serial.print("* E" + String(results.cE));
+	Serial.print(" K" +  String(results.trials - results.cE)); //print the number of errors and OK's
+	Serial.print(" *\t");
+	if (pageOr != Page)
+	{
+		results.Data = ToolsClass::conversionInt(binaryData.Data, maxBits);
+		Serial.print("C=\t");
+		Serial.print(results.Data, DEC);
+		Serial.print(" = '");
+		unsigned char c = (unsigned char)results.Data;
+		Serial.print(c);
+		Serial.print("'");
+		//Serial.print("+");
+	}
+	else
+	{
+		Serial.print("P=\t" + results.Page);
+	
+	
+	}
+	Serial.println();
+}
+void MemoRWClass::_giveZipCode(unsigned int ICnumber, unsigned int address)
+{
+	results.Device = ICnumber;
+	results.Memory = address;
+}
+bool MemoRWClass::_conversionBinary(Addrss toWord, Addrss pageOr) //ADDRESSING LOOP
 {
 	if (toWord == Memm)
 	{
-		for (int i = 0; i < maxBits + C16; i++)
+		for (unsigned int i = 0; i < maxBits + C16; i++)
 		{
-			binZipCode.Memory[i] = false;
-			binZipCode.Memory[i] = ToolsClass::doBinary(z.Memory, i);
+			binaryData.Memory[i] = false;
+			binaryData.Memory[i] = ToolsClass::doBinary(results.Memory, i);
 		}
 	}
 	else if (toWord == Dev)
 	{
-		for (int i = 0; i < maxICBits; i++)
+		for (unsigned int i = 0; i < maxICBits; i++)
 		{
-			binZipCode.Device[i] = false;
-			binZipCode.Device[i] = ToolsClass::doBinary(z.Device, i);
+			binaryData.Device[i] = false;
+			binaryData.Device[i] = ToolsClass::doBinary(results.Device, i);
 		}
 
-		binZipCode.DeviceAux[4] = binZipCode.Device[0];
-		binZipCode.DeviceAux[5] = binZipCode.Device[1];
-		binZipCode.DeviceAux[6] = binZipCode.Device[2];
+		binaryData.DeviceAux[4] = binaryData.Device[0];
+		binaryData.DeviceAux[5] = binaryData.Device[1];
+		binaryData.DeviceAux[6] = binaryData.Device[2];
 
 		if (MemoCom.IC != C02 && MemoCom.IC != C01)
 		{
-			binZipCode.DeviceAux[6] = binZipCode.Memory[8];
+			binaryData.DeviceAux[6] = binaryData.Memory[8];
 			if (MemoCom.IC == C08 || MemoCom.IC == C16)
 			{
-				binZipCode.DeviceAux[5] = binZipCode.Memory[9];
+				binaryData.DeviceAux[5] = binaryData.Memory[9];
 			}
 			if (MemoCom.IC == C16)
 			{
-				binZipCode.DeviceAux[4] = binZipCode.Memory[10];
+				binaryData.DeviceAux[4] = binaryData.Memory[10];
 			}
 		}
 	}
@@ -46,277 +119,429 @@ bool MemoRWClass::conversionBinary(Addrss toWord, Addrss pageOr) //ADDRESSING LO
 	{
 		if (pageOr == Page)
 		{
-			for (int j = 0; j < MemoCom.factor; j++)
+			for (unsigned int j = 0; j < maxAllowedLenght(); j++)
 			{
-				for (int i = 0; i < maxBits; i++) //INITIALIZES THE PAGE ARRAY
+				for (unsigned int i = 0; i < maxBits; i++) //INITIALIZES THE PAGE ARRAY
 				{
-					binZipCode.Page[j][i] = false;
+					binaryData.Page[j][i] = false;
 				}
 			}
-			binZipCode.pageIter = 0; //memmory cell index in the array
-			int max = z.Page.length(); //take a lenght up to maxOfBits
-			for (int u = 0; u < max; u++)
+			binaryData.pageIter = 0; //memmory cell index in the array
+			unsigned int max = results.Page.length(); //take a lenght up to maxOfBits
+			for (unsigned int u = 0; u < max; u++)
 			{
-				int aux = z.Page.charAt(u);
-				for (int j = 0; j < maxBits; j++)
+				unsigned int aux = (unsigned int) results.Page[u];
+				for (unsigned int j = 0; j < maxBits; j++)
 				{
-					binZipCode.Page[binZipCode.pageIter][j] = ToolsClass::doBinary(aux, j);
+					binaryData.Page[binaryData.pageIter][j] = ToolsClass::doBinary(aux, j);
 				}
-				binZipCode.pageIter++;
+				binaryData.pageIter++;
 			}
 		}
-		else {
-			for (int i = 0; i < maxBits; i++)
+		else 
+		{
+			for (unsigned int i = 0; i < maxBits; i++)
 			{
-				binZipCode.Data[i] = false;
-				binZipCode.Data[i] = ToolsClass::doBinary(z.Data, i);
+				binaryData.Data[i] = false;
+				binaryData.Data[i] = ToolsClass::doBinary(results.Data, i);
 			}
 		}
 	}
 
 	return true;
 }
-
-void MemoRWClass::readWord()
+void MemoRWClass::_readWord()
 {
-	z.Data = 0;
-	for (uint8_t j = 0; j < maxBits; j++)
-	{
-		binZipCode.Data[j] = MemoCom.RBit();
-	}
-	z.Data = ToolsClass::conversionInt(binZipCode.Data, maxBits);
+	results.Data = 0;
+	MemoCom.RArray(binaryData.Data);
+	results.Data = ToolsClass::conversionInt(binaryData.Data, maxBits);
 }
-
-bool MemoRWClass::writeWord(Addrss addrs, bool hl) //this is always the same except the 8th bit
-{
-	switch (addrs)
-	{
-	case Dev:
-	{
-		Serial.print('D');
-		binZipCode.DeviceAux[7] = hl;
-		//therefore for instance, if I send to device 1, it will be hardwired A2=HIGH
-		// but I dont have to invert the array for other icNumbers
-		//on th eother hand IF I USE IC NUMBERS I CAN GIVE PAGE NUMBERS DIRECTLY!
-		//LEAVE THEREFORE IN THIS ORDER
-		for (int i = 0; i < maxBits; i++)
-		{
-			MemoCom.WBit(binZipCode.DeviceAux[i]);
-		}
-		//8
-
-		break;
-	}
-	case Memm:
-	{
-		Serial.print('M');
-		for (int i = 0; i < maxBits; i++)
-		{
-			//int pos = (maxBits - 1 ) - i;
-			MemoCom.WBit(binZipCode.Memory[i]);
-		}
-		break;
-	}
-	case Info:
-	{
-		Serial.print('I');
-		for (int i = 0; i < maxBits; i++)
-		{
-			MemoCom.WBit(binZipCode.Data[i]);
-		}
-		break;
-	}
-	}
-	bool notok = MemoCom.acknowledge(false);
-
-	if (notok) {
-		Serial.print('E');
-		//return writeWord(addrs, hl);
-	}
-	else Serial.print('K');
-
-	return  notok;
-}
-
-void MemoRWClass::readPage(int nroOfMemCells)
-{
-	String msg = "";
-	int j = 0;
-
-	z.cE = 0;
-	z.trials = nroOfMemCells;
-
-	while (j < nroOfMemCells)
-	{
-		readWord();
-		bool notok = MemoCom.acknowledge(true);
-		char c = z.Data;
-		//Serial.print(c);
-		msg += c;
-		if (notok) z.cE++;
-		j++;
-	}
-
-	z.Page = msg;
-}
-void MemoRWClass::writePage()
-{
-	int j = 0;
-	//int cK = 0;
-	z.cE = 0;
-	z.trials = MemoCom.factor;
-	//binZipCode.pageIter CHANGE THIS BACK
-	for (j = 0; j < binZipCode.pageIter; j++) //page iter keeps last memmory cell index within page
-	{
-		//send a data memmory (cell data; memmory data)
-		for (int i = 0; i < maxBits; i++)
-		{
-			MemoCom.WBit(binZipCode.Page[j][i]);
-		}
-
-		bool notok = MemoCom.acknowledge(false);
-
-		if (notok) z.cE++;
-	}
-}
-
-void MemoRWClass::prepareWords(Addrss toDo, Addrss pageOr)
-{
-	//util booleans to avoid usign the enum
-	// the ennum is kept for clarity of code
-	isPage = (pageOr == Page);
-	isWrite = (toDo == Write);
-	current = (pageOr == Current);
-	//when reading current, the last bit is true on device address
-
-	//when writing
-	if (isWrite) //if I want to read/Write I want this, but only when random or paging. Current only when weiring
-	{
-		conversionBinary(Memm, pageOr);
-	}
-	//when reading
-	else if (!current) conversionBinary(Memm, pageOr);
-
-	//always do this, mark the device
-	conversionBinary(Dev, pageOr);
-	if (isWrite)
-	{
-		//make conversion of data or page to binary
-		//it is supposed that the user has already given
-		//device, memory and, word or full-page data through the
-		//ZipCode (may vary) structure and calls to giveZipCode fucntion (might vary nam as well)
-		conversionBinary(Info, pageOr);
-	}
-	//if (Write == toDo) conversionBinary(true,page);
-}
-void MemoRWClass::showWords(Addrss toDo, Addrss pageOr)
-{
-	int dH = DEC; //decimal or hex?
-
-	z.Device = ToolsClass::conversionInt(binZipCode.Device, maxICBits);
-
-	Serial.print(" @");
-	Serial.print(z.Device, dH);
-
-	if (!isWrite)
-	{
-		//conversionBinary(Memory, pageOr);
-		if (current)
-		{
-			conversionBinary(Memm, pageOr);
-		}
-	}
-
-	Serial.print(" M-");
-	z.Memory = ToolsClass::conversionInt(binZipCode.Memory, maxBits + C16);
-	Serial.print(z.Memory, dH);
-
-	if (!isWrite)
-	{
-		Serial.print(" R- ");
-		conversionBinary(Info, pageOr);
-	}
-	else Serial.print(" W- ");
-
-	if (!isPage)
-	{
-		z.Data = ToolsClass::conversionInt(binZipCode.Data, maxBits);
-		Serial.print(z.Data, dH);
-		Serial.print("+");
-	}
-	else
-	{
-		Serial.print("P: " + z.Page);
-		Serial.print(" * E" + String(z.cE) + "K" + String(z.trials - z.cE)); //print the number of errors and OK's
-	}
-	Serial.println();
-}
-
 //Provides read or write access to a cell
-void MemoRWClass::readWriteCell(Addrss toDo, Addrss pageOr, int sizePage = 0)
+void MemoRWClass::_readWritePageOrCell(Addrss toDo, Addrss pageOr, unsigned int sizePage = 0)
 {
-	prepareWords(toDo, pageOr);
+	_prepareWords(toDo, pageOr);
 
 	bool notok = true;
 
 	while (notok)
 	{
 		MemoCom.startStop(true);
-		notok = writeWord(Dev, current);
+		notok = _writeWord(Dev, pageOr == Current);
 	}
 
-	if (!isWrite)
+	if (toDo != Write)
 	{
-		if (!current) //random memory access
+		if (pageOr != Current) //random memory access
 		{
-			notok = writeWord(Memm, LOW); //for random
+			notok = _writeWord(Memm, LOW); //for random
 
 			if (notok)
 			{
 				//goto restart;
 				//break;
-				return readWriteCell(toDo, pageOr, sizePage);
+				return _readWritePageOrCell(toDo, pageOr, sizePage);
 			}
 
 			notok = true;
 			while (notok)
 			{
 				MemoCom.startStop(true);
-				notok = writeWord(Dev, HIGH); //high to read, low to write
+				notok = _writeWord(Dev, HIGH); //high to read, low to write
 			}
 
-			if (isPage) readPage(sizePage);
-			else readWord(); //data contains the word read
-							 /// RANDOM READ (GIVEN MEMMORY ADDRESS READ)
+			if (pageOr == Page) _readAPage(sizePage);
+			else _readWord(); //data contains the word read
+							  /// RANDOM READ (GIVEN MEMMORY ADDRESS READ)
 		}
 		else
 		{
-			readWord(); //data contains the word read
-			z.Memory = z.Data; //current address
+			_readWord(); //data contains the word read
+			results.Memory = results.Data; //current address
 		}
 	}
 	else
 	{
-		notok = writeWord(Memm, LOW); //for random
+		notok = _writeWord(Memm, LOW); //for random
 
 		if (notok)
 		{
-			return readWriteCell(toDo, pageOr, sizePage);
+			return _readWritePageOrCell(toDo, pageOr, sizePage);
 		}
 
-		if (isPage)
+		if (pageOr == Page)
 		{
-			writePage();
+			_writeAPage();
 		}
-		else notok = writeWord(Info, LOW); //CURRENT OR RANDOM
+		else notok = _writeWord(Info, LOW); //CURRENT OR RANDOM
 	}
 
-	if (z.cE > 0 || notok)
+	if (results.cE > 0 || notok)
 	{
-		return readWriteCell(toDo, pageOr, sizePage);
-		//goto restart;
+		return _readWritePageOrCell(toDo, pageOr, sizePage);
+
 	}
 	MemoCom.startStop(false);
 
-	showWords(toDo, pageOr);
+	_showWords(toDo, pageOr);
 }
+bool MemoRWClass::_writeWord(Addrss addrs, bool hl) //this is always the same except the 8th bit
+{
+	char toShow = '0';
+
+	switch (addrs)
+	{
+	case Dev:
+	{
+		toShow=('D');
+		binaryData.DeviceAux[7] = hl;
+		MemoCom.WArray(binaryData.DeviceAux);
+		break;
+	}
+	case Memm:
+	{
+		toShow=('C');
+		MemoCom.WArray(binaryData.Memory);
+		break;
+	}
+	case Info:
+	{
+		toShow=('I');
+		MemoCom.WArray(binaryData.Data);
+		break;
+	}
+	}
+	bool notok = MemoCom.acknowledge(false);
+
+	if (notok)
+	{
+		toShow=('E');
+		
+	}
+	else toShow=('0');
+
+#ifdef DEBUG
+	Serial.print(toShow);
+#endif // DEBUG
+
+
+
+
+	return  notok;
+}
+void MemoRWClass::_readAPage(unsigned int nroOfMemCells)
+{
+	String msg = "";
+	unsigned int j = 0;
+
+	results.cE = 0;
+	results.trials = nroOfMemCells;
+
+	while (j < nroOfMemCells)
+	{
+		_readWord();
+		bool notok = MemoCom.acknowledge(true);
+		msg += (char)results.Data;
+		if (notok) results.cE++;
+		j++;
+	}
+
+	results.Page = msg;
+}
+
+void binaryData::init()
+{
+
+
+	bool device[maxICBits] = { 0, 0, 0 };
+
+	bool deviceAux[maxBits] = { 1,0,1,0,0,0, 0, 0 }; //3-bit array // leave first 4 bits alone, necessary for IC 24C0x chips
+	bool memory[maxBits + C16] = { 0,0,0,0, 0, 0, 0, 0, 0 ,0,0 }; //eleven-bit array
+	bool data[maxBits] = { 0, 0, 0, 0, 0, 0, 0, 0 }; //8-bit array
+	//bool page[maxBits * 2][maxBits];
+
+
+	Device = device; //3-bit array
+	DeviceAux = deviceAux; //3-bit array // leave first 4 bits alone, necessary for IC 24C0x chips
+	Memory = memory; //eleven-bit array
+	Data = data; //8-bit array
+
+	Page = (bool **)malloc(sizeof(bool *) * maxBits * 2);
+	for (unsigned int i = 0; i < maxBits * 2; ++i)
+	{
+		Page[i] = (bool *)malloc(sizeof(bool) * maxBits);
+
+	}
+	for (size_t i = 0; i < maxBits * 2; i++)
+	{
+		for (size_t j = 0; j < maxBits; j++)
+		{
+			Page[j][i] = false;
+		
+		}
+		
+	}
+
+#ifdef  DEBUG
+	for (size_t i = 0; i < maxICBits; i++)
+	{
+		Serial.print(Device[i]);
+	}
+	Serial.println();
+	Serial.println();
+	for (size_t i = 0; i < maxBits; i++)
+	{
+		Serial.print(DeviceAux[i]);
+	}
+	Serial.println();
+	Serial.println();
+	for (size_t i = 0; i < maxBits + C16; i++)
+	{
+		Serial.print(Memory[i]);
+	}
+	Serial.println();
+	Serial.println();
+	for (size_t i = 0; i < maxBits * 2; i++)
+	{
+		for (size_t j = 0; j < maxBits; j++)
+		{
+			Page[j][i] = false;
+			Serial.print(Page[j][i]);
+		}
+		Serial.println();
+	}
+	Serial.println();
+	Serial.println();
+
+#endif //  DEBUG
+
+
+
+}
+void MemoRWClass::_writeAPage()
+{
+
+	
+
+	results.trials = maxAllowedLenght();
+	results.cE = 0;
+	results.cE  = MemoCom.WArray(binaryData.Page, binaryData.pageIter);
+
+	/*
+	for (unsigned int j = 0; j < binaryData.pageIter; j++) //page iter keeps last memmory cell index within page
+	{
+		//send a data memmory (cell data; memmory data)
+		for (unsigned int i = 0; i < maxBits; i++)
+		{
+			MemoCom.WBit(binaryData.Page[j][i]);
+		}
+
+		bool notok = MemoCom.acknowledge(false);
+
+		if (notok) results.cE++;
+	}
+	*/
+
+}
+
+unsigned int MemoRWClass::maxAllowedLenght()
+{
+	return MemoCom.maxAllowedLength;
+}
+
+void MemoRWClass::setup(Chip IC)
+{
+	binaryData.init();
+	MemoCom.setup(IC);
+
+}
+
+///////////////////////////////
+/////////////////////////////////
+///////////////////////////////
+////////////////////////////////
+
+void MemoRWClass::readWriteMsg(unsigned int icNumber, unsigned int page, bool readMode = true, String msg = "", unsigned int msgSize = 0U)
+
+{
+	results.Page = "";
+
+	unsigned int size = msgSize;
+	if (!readMode) size = msg.length();
+	//this value remains fixed
+	unsigned int initialPage = page;
+
+	unsigned	int u = 0; //for iterating the msg array
+	unsigned int mB = 0; //keeps track of the iteration of msg array when write pages
+
+	unsigned int sizeOfPage = maxAllowedLenght();
+	//so at every MaxBits =8 it resets the dataTxt for a new page-write
+
+	while (u < size) //make packets of text
+	{
+		//add char to write if not reading...
+		if (!readMode) results.Page += msg[u];
+
+		//SO THIS CHANGES PAGE EVERY 16 PAGES BY CHANGING MEMO ADDRSS accordingly
+		while (initialPage >= totalMaxBits)
+		{
+			page += fixedBias; //i.e. page - 240
+			initialPage -= totalMaxBits; // initialPage - 16
+		}
+
+		//when a page Msg has been formed send it to the given page
+		if (mB == sizeOfPage - 1)
+		{
+		
+			_giveZipCode(icNumber, page);
+
+			if (!readMode)
+			{
+				_readWritePageOrCell(Write, Page, sizeOfPage);
+				results.Page = "";
+			}
+			else
+			{
+				_readWritePageOrCell(Read, Page, sizeOfPage);
+			}
+
+			///SUPERIMPORTANTE
+			//delayMicroseconds(50); //deberia tratar de reducir esto pero lo necesita!
+
+			mB = 0;
+			page++;
+			initialPage++;
+			//modificar maxBits para otras paginas mayores a 32 o mayores a 8 bits!
+		}
+		else mB++;
+
+		u++; //iterator
+	}
+
+	//make it 0 again or mark the exact excess of chars
+	if (mB > 0) //if the are remaining characters to send less than a full page, send them
+	{
+		//send the excess character
+		_giveZipCode(icNumber, page);
+		if (!readMode)
+		{
+			_readWritePageOrCell(Write, Page, mB);
+		}
+		else
+		{
+			_readWritePageOrCell(Read, Page, mB);
+		}
+	}
+}
+
+void MemoRWClass::writeCell(unsigned int icNumber, unsigned int address, unsigned int data) {
+	// Number of the 24C02 Device to which data to be written
+	// Data to be written to specified memory of 24C02
+	//int Data = data;       // In the range 0 - 255
+
+	results.Data = data;
+	_giveZipCode(icNumber, address);
+
+	_readWritePageOrCell(Write, Random);
+}
+
+void MemoRWClass::readCell(unsigned int ICnumber, unsigned int address)
+{
+	_giveZipCode(ICnumber, address);
+	_readWritePageOrCell(Read, Random);
+}
+void MemoRWClass::readEraseAll(unsigned int iCNumber, bool readMode = true, bool ramDo = true)
+{
+	unsigned int maxPages = (unsigned int)(maxLenght / maxBits);
+	if (MemoCom.IC == C08 || MemoCom.IC == C16) maxPages *= 2;
+	for (unsigned int i = 0; i < maxPages; i++)
+	{
+		readEraseAPage(iCNumber, i, maxAllowedLenght(), readMode, ramDo);
+	}
+}
+
+void MemoRWClass::readErase(unsigned int icNumber, unsigned int startAddrss, unsigned int numberOfCells =1, bool readMode = true, bool ramDo = true)
+{
+	unsigned int i; 
+
+	for (unsigned int u = 0; u < numberOfCells; u++)
+	{
+		if (ramDo) i = random(48, 57);
+		else i = 48;
+		if (!readMode) writeCell(icNumber, startAddrss + u, i);
+		else readCell(icNumber, startAddrss + u);
+	}
+}
+
+String MemoRWClass::readEraseAPage(unsigned int icNumber, unsigned int page, unsigned int numberOfCells =1, bool readMode = true, bool ramDo = true)
+{
+	unsigned int i = 48;
+	String msg = "";
+	unsigned int cellCount = 0;
+
+	//given a page size of 16 binaryData
+	for (unsigned int u = 0; u < numberOfCells; u++)
+	{
+		//if write, construct the string to overwrite, either from random or
+		//"49s"
+		if (!readMode)
+		{
+			if (ramDo) i = random(48, 57);
+			msg += (char)i;
+		}
+
+		if (cellCount == maxAllowedLenght() - 1)
+		{
+			readWriteMsg(icNumber, page, readMode, msg.c_str(), maxAllowedLenght());
+			cellCount = 0;
+			if (!readMode) msg = "";
+			else msg += results.Page;
+			page++;
+		}
+		else cellCount++;
+	}
+
+	return msg;
+}
+
+
+

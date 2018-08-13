@@ -11,33 +11,38 @@
 
 #include "Tools.h"
 
-class ZipCode
+
+//#define DEBUG 1
+
+class Results
 {
 protected:
 
+
 public:
-	int Device = 0;   // In the range 0 - 7
+	unsigned int Device = 0;   // In the range 0 - 7
 					  // Memory Byte Address of the 24C04 from which data to be read
-	int Memory = 0;    // In the range 0 - 255
-	int Data = 0;
+	unsigned int Memory = 0;    // In the range 0 - 255
+	unsigned int Data = 0;
 	String Page = "";
 
-	int cE = 0;
-	int trials = 0;
+	unsigned	int cE = 0;
+	unsigned int trials = 0;
 };
-class binaryZipCode
+class binaryData
 {
 protected:
 
 public:
-	bool Device[maxICBits] = { 0, 0, 0 }; //3-bit array
-	bool DeviceAux[maxBits] = { 1,0,1,0,0,0, 0, 0 }; //3-bit array // leave first 4 bits alone, necessary for IC 24C0x chips
-	bool Memory[maxBits + C16] = { 0,0,0,0, 0, 0, 0, 0, 0 ,0,0 }; //eleven-bit array
-	bool Data[maxBits] = { 0, 0, 0, 0, 0, 0, 0, 0 }; //8-bit array
+	
+	void init();
+	bool* Device;  //3-bit array
+	bool* DeviceAux;//  
+	bool* Memory;//  //eleven-bit array
+	bool* Data;//  //8-bit array
+	bool** Page;// [maxBits * 2][maxBits];
 
-	bool Page[maxBits * 2][maxBits];
-
-	int pageIter = 0;
+	unsigned int pageIter = 0;
 };
 enum Addrss
 {
@@ -54,40 +59,52 @@ enum Addrss
 class MemoRWClass
 {
 protected:
-	void prepareWords(Addrss toDo, Addrss pageOr);
 
-	void showWords(Addrss toDo, Addrss pageOr);
+	//prepare words
+	void _prepareWords(Addrss toDo, Addrss pageOr);
 
-	bool conversionBinary(Addrss toWord, Addrss pageOr);
+	//show serial results
+	void _showWords(Addrss toDo, Addrss pageOr);
 
-	bool isWrite = false;
-	bool current = false;
-	bool isPage = false;
+	//converts
+	bool _conversionBinary(Addrss toWord, Addrss pageOr);
+	
+    //Reads a page
+	void _readAPage(unsigned int nroOfMemCells);
+	//Writes a page
+	void _writeAPage();
+	//Reads a word
+	void _readWord();
+	//Writes a word
+	bool _writeWord(Addrss addrs, bool hl);
 
-	binaryZipCode binZipCode;
-
-public:
-
-	ZipCode z;
+	//binary data
+	binaryData binaryData;
+	//Provides cell location
+	void _giveZipCode(unsigned int ICnumber, unsigned int address);
+	//Reads or writes a cell
+	void _readWritePageOrCell(Addrss toDo, Addrss pageOr, unsigned int sizePage = 0);
 
 	MemoComClass MemoCom;
 
-	//Provides cell location
-	void giveZipCode(int ICnumber, unsigned int address);
+public:
 
-	//Reads a word
-	void readWord();
+	void writeCell(unsigned int icNumber, unsigned int address, unsigned int data);
+	void readCell(unsigned int ICnumber, unsigned int address);
 
-	//Writes a word
-	bool writeWord(Addrss addrs, bool hl);
+	void readEraseAll(unsigned int iCNumber, bool readMode = true, bool ramDo = true);
+	void readErase(unsigned int icNumber, unsigned int startAddrss, unsigned int numberOfCells =1, bool readMode = true, bool ramDo = true);
 
-	//Reads a page
-	void readPage(int nroOfMemCells);
-	//Writes a page
-	void writePage();
+	unsigned int maxAllowedLenght();
+	String readEraseAPage(unsigned int icNumber, unsigned int page, unsigned int numberOfCells =1, bool readMode = true, bool ramDo = true);
+	Results results;
+	void setup(Chip IC);
+	
 
-	//Reads or writes a cell
-	void readWriteCell(Addrss toDo, Addrss pageOr, int sizePage = 0);
+	//another group
+	void readWriteMsg(unsigned int icNumber, unsigned int page, bool readMode = true, String msg = "", unsigned int msgSize = 0);
+
+
 };
 
 #endif

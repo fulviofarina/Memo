@@ -55,31 +55,61 @@ void MemoComClass::setup(Chip ic)
 	IC = ic;
 	if (IC != C02 && IC != C01)
 	{
-		factor = 2 * maxBits;
+		maxAllowedLength = 2 * maxBits;
 	}
-	else  factor = maxBits;
+	else  maxAllowedLength = maxBits;
 }
 
-bool MemoComClass::WBit(bool bitToWrite)
+void MemoComClass::WBit(bool bitToWrite)
 {
 	sda(bitToWrite, true);
 
 	scl(HIGH);
 
 	scl(LOW);
-
-	return bitToWrite;
 }
+void MemoComClass::RArray(bool * therrary)
+{
+	for (unsigned int j = 0; j < maxBits; j++)
+	{
+		therrary[j] = RBit();
+	}
+}
+void MemoComClass::WArray(bool * thearray)
+{
+	for (unsigned int i = 0; i < maxBits; i++)
+	{
+		WBit(thearray[i]);
+	}
+}
+
+unsigned int MemoComClass::WArray(bool ** thearray, unsigned int pageIters)
+{
+	unsigned int count = 0;
+	for (unsigned int j = 0; j < pageIters; j++) //page iter keeps last memmory cell index within page
+	{
+		//send a data memmory (cell data; memmory data)
+		for (unsigned int i = 0; i < maxBits; i++)
+		{
+			WBit(thearray[j][i]);
+		}
+
+		bool notok = acknowledge(false);
+
+		if (notok) count++;
+	}
+	return count;
+}
+
+
 bool MemoComClass::RBit()
 {
 	bool bitRW = false;
 	pinMode(SDAPin, INPUT);
 	scl(HIGH);
 
-	for (uint8_t i = 0; i < maxBits; i++)
-	{
-		bitRW = digitalRead(SDAPin);
-	}
+	bitRW = digitalRead(SDAPin);
+
 	scl(LOW);
 
 	return bitRW;
